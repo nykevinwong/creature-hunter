@@ -14,7 +14,7 @@ public class GunController : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    void LateUpdate()
     {
         Vector2 mousePos = camera.ScreenToWorldPoint(Input.mousePosition);
         bool flip = mousePos.x < 0;
