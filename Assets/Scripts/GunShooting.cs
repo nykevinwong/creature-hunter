@@ -17,8 +17,9 @@ public class GunShooting : MonoBehaviour
             }
             else if (col != null && col.CompareTag("Creature"))
             {
-                Entity target = col.GetComponentInParent<Entity>();
-                target.Hit(mousePos);
+                Debug.Log("hit the creature");
+                Entity entity = col.GetComponentInParent<Entity>();
+                entity.Hit(mousePos);
             }
         }
     }

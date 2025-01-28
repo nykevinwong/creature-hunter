@@ -12,6 +12,11 @@ public class Entity : MonoBehaviour
   
     private float dashUsageTimer;
 
+    public float maxHP = 1;
+    public float currentHP = 1;
+
+    protected int soundID = 0;
+
     [Header("Collision Info")]
     [SerializeField] private Transform groundCheck;
     [SerializeField] private float groundCheckDistance;
@@ -27,7 +32,7 @@ public class Entity : MonoBehaviour
     public StateMachine StateMachine { get; private set; } = new StateMachine();
     // Start is called before the first frame update
     public Dictionary<EnumBirdStates, State> states = new Dictionary<EnumBirdStates, State>();
-
+    private EntitySound EntitySound { get; set; }
     int facingDir = 1;
 
     private void Awake()
@@ -37,6 +42,13 @@ public class Entity : MonoBehaviour
         Anim = GetComponentInChildren<Animator>();
         Rb = GetComponent<Rigidbody2D>();
         SR = GetComponentInChildren<SpriteRenderer>();
+        EntitySound = GetComponent<EntitySound>();
+
+        if(EntitySound!=null)
+        {
+            soundID = UnityEngine.Random.Range(0, EntitySound.audioClips.Count - 1);
+        }
+
         foreach (EnumBirdStates state in Enum.GetValues(typeof(EnumBirdStates)))
         {
             states[state] = StateFactory.CreateState(this, state);
@@ -76,7 +88,10 @@ public class Entity : MonoBehaviour
 
     }
 
- 
+    public void SetVelocity(float vx, float vy)
+    {
+        Rb.velocity = new Vector2(vx, vy);
+    }
 
     public bool IsGroundDetected() => Physics2D.Raycast(groundCheck.position, Vector2.down, groundCheckDistance, whatIsGround);
     public bool IsWallDetected() => Physics2D.Raycast(wallCheck.position, Vector2.right * facingDir, wallCheckDistance, whatIsGround);
@@ -93,12 +108,52 @@ public class Entity : MonoBehaviour
     
     public void Hit(Vector2 hitPosition)
     {
-        if (StateMachine.CurrentState != this.states[EnumBirdStates.BirdDamaged])
+        if (StateMachine.CurrentState != this.states[EnumBirdStates.BirdDeath] &&
+            StateMachine.CurrentState != this.states[EnumBirdStates.BirdDamaged] )
         {
             StateMachine.ChangeState(this.states[EnumBirdStates.BirdDamaged]);
         }
     }
 
+    public void Damage(float damageValue)
+    {
+        this.currentHP -= damageValue;
+        if(this.currentHP < 0)
+        {
+            StateMachine.ChangeState(this.states[EnumBirdStates.BirdDeath]);
+        }
+    }
+
+    public void Destruct()
+    {
+        this.gameObject.SetActive(false);
+        Destroy(gameObject);
+        BirdSpanwer.BIRD_COUNT--;
+    }
+
+    public void PlaySound(string name=null)
+    {
+        if (EntitySound != null)
+        {
+            switch(name)
+            {
+            case "falling":
+                    EntitySound.PlayFallingSound();
+                    break;
+            default:
+                    EntitySound.PlaySound(soundID);
+                    break;
+            }
+        }
+    }
+
+    
+
+
 }
+
+
+
+
 
 

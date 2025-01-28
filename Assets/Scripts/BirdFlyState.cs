@@ -7,7 +7,8 @@ using static StateFactory;
 public class BirdFlyState : State
 {
     Vector3 destination;
-    float flyDestinationDuration = 0;
+    float nextSoundDuration = 0;
+    float soundElapsedTime = 0;
     public BirdFlyState(StateMachine stateMachine, Entity entity, string animBoolName) : base(stateMachine, entity, animBoolName)
     {
     }
@@ -17,8 +18,9 @@ public class BirdFlyState : State
         // if destination is too close to the current position, you will see the duck stuck at current position.
 
         destination = new Vector3(Random.Range(-8.0f, 8.0f), Random.Range(-3.75f, 7.5f), 0);
-        flyDestinationDuration = Random.Range(1.0f, 5.0f);
+        nextSoundDuration = Random.Range(0.5f, 1.0f);
         entity.moveSpeed = Random.Range(4f, 10f);
+        entity.SetVelocity(0f, 0f); // disable velocity when MovePosition method is used.
         base.Enter();
     }
 
@@ -36,7 +38,13 @@ public class BirdFlyState : State
         Mathf.Clamp(entity.transform.position.x, -8f, 8f),
         Mathf.Clamp(entity.transform.position.y, -3.75f, 7.5f));
 
-        flyDestinationDuration -= Time.deltaTime;
+        soundElapsedTime -= Time.deltaTime;
+
+        if (soundElapsedTime <= 0)
+        {
+            this.entity.PlaySound();
+            soundElapsedTime = nextSoundDuration;
+        }
 
         if (entity.transform.position.x < -8 ||
             entity.transform.position.x > 8)
@@ -50,14 +58,6 @@ public class BirdFlyState : State
             StateMachine.ChangeState(this.entity.states[EnumBirdStates.BirdFly]);
             return;
         }
-        //else if (flyDestinationDuration < 0)
-        //{
-        //    StateMachine.ChangeState(this.entity.states[EnumBirdStates.BirdFly]);
-        //    return;
-        //}
-
-
-
 
 
 
