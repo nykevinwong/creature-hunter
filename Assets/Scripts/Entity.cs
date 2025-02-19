@@ -90,7 +90,7 @@ public class Entity : MonoBehaviour
 
     public void SetVelocity(float vx, float vy)
     {
-        Rb.velocity = new Vector2(vx, vy);
+        Rb.linearVelocity = new Vector2(vx, vy);
     }
 
     public bool IsGroundDetected() => Physics2D.Raycast(groundCheck.position, Vector2.down, groundCheckDistance, whatIsGround);
